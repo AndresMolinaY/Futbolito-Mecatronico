@@ -1,4 +1,4 @@
-Mini Futbolito Mecatrónico  
+![WhatsApp Image 2025-03-04 at 12 18 24_b856c940](https://github.com/user-attachments/assets/df390962-62ed-4a01-a669-758bad13301c)![WhatsApp Image 2025-03-04 at 12 18 23_e6e65ad9](https://github.com/user-attachments/assets/1034bfdd-e81a-40bd-9683-f2e941af28a0)![image](https://github.com/user-attachments/assets/eb8c7d08-284a-48f7-b922-67ca25843af7)Mini Futbolito Mecatrónico  
 
 Este proyecto fue desarrollado como parte de la materia **Implementación de Sistemas Mecatrónicos**. Consiste en un futbolito mecatrónico basado en el video [Automated Foosball Table](https://www.youtube.com/watch?v=JqSubWfrhvw), adaptado con componentes accesibles y un diseño personalizado.  
 
@@ -40,20 +40,45 @@ Proceso de desarrollo
 1. **Diseño del futbolito:** Modelado de la estructura en software CAD e impresión en 3D.
    - Diseño y Calculos de Engranes basado en (https://www.youtube.com/watch?v=GZQxDMYksXk)
   ![image](https://github.com/user-attachments/assets/49659164-70ce-4076-adfd-2063709259fd)
+   
+   -Modelado de Piezas de Soporte para el perfil y base para engranes.
+   ![image](https://github.com/user-attachments/assets/d4be3da8-b068-48a1-a3fe-61fd5cbda7a1)
 
-  
+   -Diseño Piezas para golpeador y carrito deslizante.
+   ![image](https://github.com/user-attachments/assets/c1cb8876-4b7e-40a2-b061-63647b6cfa87)
+
+  -Ensamble Final.
+  ![image](https://github.com/user-attachments/assets/4afe912f-b366-4900-ba06-91d9f3196eb7)
+
  
-2. **Implementación del sistema mecánico**  
+3. **Implementación del sistema mecánico**
    - Integración del motor NEMA para el movimiento de los jugadores.  
-   - Instalación del solenoide de 5V para golpear el balón.  
+   - Instalación del solenoide de 5V para golpear el balón.
+   ![image](https://github.com/user-attachments/assets/e113d3f0-80d0-462d-8792-2839366076ac)
 
-3. **Programación y control**  
-   - Configuración del Arduino Uno para controlar los motores y solenoide.  
-   - Implementación del sistema de conteo de goles con el sensor lineal.  
 
-4. **Pruebas y ajustes**  
+5. **Programación y control**  
+   - Configuración del Arduino Uno para controlar los motores y solenoide.
+   ![WhatsApp Image 2025-03-04 at 12 18 24_78e29c11](https://github.com/user-attachments/assets/5168cf78-6b7d-4ab4-b45e-799cd3ae2ec4)
+
+   - Implementación del sistema de conteo de goles con el sensor lineal.
+   ![WhatsApp Image 2025-03-04 at 12 18 23_e6e65ad9](https://github.com/user-attachments/assets/7fc85142-0300-4296-9617-1db708e560df)
+
+
+6.**Integración de Fuente de Poder**
+   - Calulos y Compra de Componentes
+   - Ensamble y Pruebas
+![WhatsApp Image 2025-03-04 at 12 18 24_b856c940](https://github.com/user-attachments/assets/3318b5b0-7f39-44da-98cf-7c89bb62be4e)
+
+
+7.  **Pruebas y ajustes**  
    - Evaluación del movimiento y respuesta del sistema.  
-   - Corrección de fallos y optimización del código.  
+   - Corrección de fallos y optimización del código.
+
+8. **Producto Final**
+
+![WhatsApp Image 2025-03-04 at 12 18 23_abc44396](https://github.com/user-attachments/assets/f31c429f-9389-4937-ada8-e6d1840fcf45)
+![WhatsApp Image 2025-03-04 at 12 18 23_23466cbb](https://github.com/user-attachments/assets/fb5d772f-ffec-4816-8174-0b01a50684da)
 
 Créditos  
 
