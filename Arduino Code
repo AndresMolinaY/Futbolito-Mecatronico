@@ -1,0 +1,178 @@
+#include <Wire.h>
+#include <VL53L0X.h>
+#include <LiquidCrystal_I2C.h>
+
+VL53L0X sensor; 
+LiquidCrystal_I2C lcd(0x27, 16, 2); //0x27 es la dirección de I2C del LED.
+
+//Según documentación podemos mejorar la precision disminuyendo la velocidad de medicion y el rango.
+#define HIGH_ACCURACY 
+#if defined LONG_RANGE
+  sensor.setSignalRateLimit(0.1);
+  sensor.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+  sensor.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+#endif
+
+//Sensor
+  const int distanciaDeteccion = 100; //La distancia a la que detecta el balon.
+  const long tiempoEspera = 5000; //Espacio de tiempo el cual no vuelve a detectar un gol.
+  long ultimaDeteccion = 0; //Variable para almacenar el último tiempo que se metio un gol.
+  int contadorGoles = 0;  // Contador de goles.
+
+//Selenoide
+  #define inputSelenoide 5 //Boton que envia la señal para activar selenoide.
+  #define outputSelenoide 4 //El pin que hace que el selenoide dispare, que activa el transistor.
+  bool estadoBotonSelenoide = 0; //Variable en la cual se guarda si el boton esta presionado o no, para el if despues.
+
+//LimitSwitches
+  #define limitSwitchDerecha 12 //Conectar En el medio el ground y en el rojo el pin
+  #define limitSwitchIzquierda 11 //Conectar En el medio el ground y en el rojo el pin
+  bool topeDerecha = 1; //Variable que verifica se se llego al limite derecho.
+  bool topeIzquierda = 1; //Variable que verifica se se llego al limite izquierdo.
+
+//Motor - Driver
+  #define dirPin  2 //Pin de direccion del motor. 
+  #define stepPin 9 //Pin que manda el step al motor.
+  #define enablePin 3 //Pin que prende y apaga el driver.
+  int motorMoviendo = 0; //Variable que especifica si el motor se esta moviendo o no
+
+//Joystick
+  #define joystickPin A0 //Pin de lectura del joystick
+  int lecturaJoystick = 0; //Variable que guarda la ubicacion del joystick
+
+void setup() {
+  Serial.begin(9600); //Inicializamos la comunicación serial.
+  Wire.begin(); //Inicializamos la comunicacion I2C.
+
+  //Sensor 
+  sensor.setTimeout(500);
+  if (!sensor.init())
+  {
+    Serial.println("Failed to detect and initialize sensor!");
+    while (1) {}
+  }
+  
+  //Selenoide
+  pinMode(outputSelenoide, OUTPUT);
+  digitalWrite(outputSelenoide, LOW);
+  pinMode(inputSelenoide, INPUT_PULLUP);
+
+  //LimitSwitches
+  pinMode(limitSwitchDerecha, INPUT_PULLUP);  
+  pinMode(limitSwitchIzquierda, INPUT_PULLUP);
+  
+  //Motores - Drivers
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+  pinMode(enablePin, OUTPUT);
+  digitalWrite(enablePin, LOW);
+
+  //Modificamos los registros.
+  TCCR1B = TCCR1B & 0b11111000 | 2; //Seteamos el preescaler a 8
+  TCNT1 = 65000;
+  
+  //Damos un delay para que todo se ejecute de manera correcta.
+  delay(1000);
+  
+}
+
+//Variable que se encarga de golpear el selenoide
+void GolpearSelenoide(){
+  Serial.println("Extendiendo Selenoide");
+  digitalWrite(outputSelenoide, HIGH);
+  delay(100);
+  Serial.println("Encogiendo Selenoide");
+  digitalWrite(outputSelenoide, LOW);
+}
+
+void loop(){
+  topeDerecha = digitalRead(limitSwitchDerecha);
+  topeIzquierda = digitalRead(limitSwitchIzquierda);
+  lecturaJoystick = analogRead(joystickPin);
+  estadoBotonSelenoide = digitalRead(inputSelenoide);
+
+  Serial.print("Joystick: ");
+  Serial.print(lecturaJoystick);
+  Serial.print(" | ");
+  Serial.print("Limite Derecha: ");
+  Serial.print(topeDerecha);
+  Serial.print(" | ");
+  Serial.print("Limite Izquierda: ");
+  Serial.print(topeIzquierda);
+  Serial.print(" | ");
+  Serial.print("Selenoide :");
+  Serial.println(inputSelenoide);
+  Serial.println(contadorGoles);
+
+  //Sensor
+  int distancia = sensor.readRangeSingleMillimeters();
+
+  if (!sensor.timeoutOccurred()) {
+    if (distancia < distanciaDeteccion) {
+      if (millis() - ultimaDeteccion > tiempoEspera) {
+        contadorGoles++;
+        ultimaDeteccion = millis();
+        Serial.print("¡Gol detectado! Total: ");
+        Serial.println(contadorGoles);
+      }
+    }
+  } else {
+    Serial.println("TIEMPO DE ESPERA EXCEDIDO");
+  }
+
+  delay(1);
+
+  //Chequeamos el Selenoide
+  if (estadoBotonSelenoide == 0){
+    GolpearSelenoide();
+  }
+
+  //Cuando el LS derecho esta presionado
+  if (topeDerecha == 0){
+    analogWrite(stepPin, 0);
+    Serial.println("Maximo valor a la derecha! ");
+    digitalWrite(dirPin, LOW);
+    motorMoviendo = 0;
+    if (lecturaJoystick < 480) {
+      motorMoviendo = 1;
+      analogWrite(stepPin, 128);
+    }
+  }
+
+  //Cuando el LS izquierdo esta presionado
+  else if (topeIzquierda == 0){
+      analogWrite(stepPin, 0);
+      Serial.println("Maximo valor a la Izquierda! ");
+      digitalWrite(dirPin, HIGH);
+      motorMoviendo = 0;
+      if (lecturaJoystick > 540) {
+        motorMoviendo = 2;
+        analogWrite(stepPin, 128);
+      }
+    }
+
+  //Cuando ningun LS este presionado    
+  else {
+    Serial.println("Ningun LM activo");
+    if (lecturaJoystick > 480 && lecturaJoystick < 540 && (motorMoviendo == 1 || motorMoviendo == 2)){
+      analogWrite(stepPin, 0);
+      delay(100);
+      motorMoviendo = 0;
+      Serial.println("CENTRO Y QUIETO");
+    }
+    if (lecturaJoystick < 480 && (motorMoviendo == 0 || motorMoviendo == 2)){
+      digitalWrite(dirPin, LOW);
+      Serial.println("DirecA");
+      analogWrite(stepPin, 128);
+      delay(100);
+      motorMoviendo = 1;
+    }
+    if (lecturaJoystick > 540 && (motorMoviendo == 0 || motorMoviendo == 1)) {
+      digitalWrite(dirPin, HIGH);
+      Serial.println("DirecB");
+      analogWrite(stepPin, 128);
+      delay(100);
+      motorMoviendo = 2;
+    }    
+  }
+}
