@@ -1,4 +1,4 @@
-![WhatsApp Image 2025-03-04 at 12 18 24_b856c940](https://github.com/user-attachments/assets/df390962-62ed-4a01-a669-758bad13301c)![WhatsApp Image 2025-03-04 at 12 18 23_e6e65ad9](https://github.com/user-attachments/assets/1034bfdd-e81a-40bd-9683-f2e941af28a0)![image](https://github.com/user-attachments/assets/eb8c7d08-284a-48f7-b922-67ca25843af7)Mini Futbolito Mecatrónico  
+Mini Futbolito Mecatrónico  
 
 Este proyecto fue desarrollado como parte de la materia **Implementación de Sistemas Mecatrónicos**. Consiste en un futbolito mecatrónico basado en el video [Automated Foosball Table](https://www.youtube.com/watch?v=JqSubWfrhvw), adaptado con componentes accesibles y un diseño personalizado.  
 
