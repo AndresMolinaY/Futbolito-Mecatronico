@@ -1,0 +1,94 @@
+Timers
+Introducción
+Arduino trabaja de manera lineal, realizando la ejecución del código línea por línea. Debido al funcionamiento de un motor tipo “Stepper”, es necesario enviar 1 y 0 en forma continua para mover el motor, esto en periodos cortos de tiempo, 200 microsegundos aproximadamente. Para la ejecución del código de manera simple/lineal se utiliza una función “Girar()”, donde se ejecuta un ciclo “for” donde se repite varias veces un 1 lógico y un 0 cero lógicos en un intervalo de tiempo, la ejecución de esta función significa un intervalo de “ocupación” del Arduino donde no se pueden realizar lecturas de sensores o cualquier otra acción, por lo que no resulta eficiente.  Así también, el ejecutar estos ciclos implica que entre ciclos existe la realización de otras acciones por lo que existe un intervalo de tiempo donde el motor deja de girar, a pesar de ser mínimo significa un titubeo en el movimiento del motor.
+Es por este motivo que se buscó trabajar con la señal PWM (pulse with modulation), la cual envía constantemente unos y ceros lógicos en intervalos muy pequeños de tiempo, la señal pwm simula una señal analógica, pero puede ser aprovechando como un “Step” al establecer un ciclo de trabajo de 50%.
+
+Funcionamiento Básico
+Arduino cuenta con tres timers independientes que funcionan prácticamente como periféricos, es decir se prenden una vez y trabajan independientemente. Cada timer tiene una función específica, así que utilizaremos el Timer1 para modificar la frecuencia de nuestro Arduino.
+Modificaciones de Registros
+Existen varias formas de operar el Timer1, utilizaremos la normal, para encender el timer es necesario modificar los registros dentro del Atmega, cambiando los bits WGM13 WGM12 WGM WGM11 WGM10 en los registros TCCR1A and TCCR1B a 0.
+TCCR1A = 0;
+TCCR1B = 0;
+
+Así también el bit CS10 encargado de el “prescaling” necesita ser establecido como 1. 
+TCCR1B |= (1<<CS10);
+
+Así entonces con estas configuraciones iniciales configuramos el timer TCNT1, para marcar un step cada que el reloj de 16mHz complete un periodo, y como se trata de un timer-registro de 16 bits, obtenemos  216 = 65535 steps antes de volver a 0. Para poder calcular el periodo de nuestro reloj utilizamos la siguiente formula:
+x=65545/((16*10^6)/Prescaler)
+Se pueden utilizar diferentes prescalers para obtener diferentes frecuencias, siempre modificando los bits de registros, los cuales pueden ser modificados según la siguiente tabla: 
+ 
+ 
+Aun así, si necesitamos modificar la frecuencia a un valor fuera de los simples prescalers, podemos modificar el valor inicial del timer para reducir el valor de 65545, a uno deseado. Utilizando la siguiente formula.
+TCNT1=2^(bits de memoria)-  (f del reloj)/(prescaler*f deseada)
+Por ejemplo si deseamos un timer con una frecuencia de un segundo, es decir 1 segundo utilizando un prescaler de 256, se realizará lo siguiente:
+TCNT1=65536-  (16*10^6)/(256*1)
+Y el codigo quedaria de la siguiente forma:
+TCCR1A = 0;
+TCCR1B = 0;
+TCNT1 = 3036;
+TCCR1B |= (1<<CS12);
+
+Prueba de Velocidades
+Una vez con el prototipo del mecanismo del futbolito, podemos empezar a hacer pruebas de velocidades , ya que conocemos como establecer la frecuencia que necesitamos para una senal PWM, ahora necesitamos saber que frecuencia base utilizar. Para esto necesitaremos primero conocer un numero aproximado de steps que toma en recorrer el perfil completo, ya que si utilizamos demasiada velocidad podemos llegar a los bordes y dañar el mecanismo, para esto utilizaremos el siguiente codigo sin utilización de PWM.
+int steps = 0;
+ 
+void setup() {
+  Serial.begin(9600);
+  pinMode(9, OUTPUT);
+
+}
+ 
+void loop() {
+  if (analogRead(A0) < 400){
+  digitalWrite(9, HIGH);
+  delayMicroseconds(200);
+  digitalWrite(9, LOW);
+  delayMicroseconds(200);
+  Serial.print("Número de Steps: ");
+  Serial.println(steps);
+  steps ++;
+  }
+}
+ 
+
+Una vez sabiendo que en nuestra pista se utilizan X steps, podemos realizar un nuevo código que se encargue de probar velocidades hasta el punto en el que se pierdan steps o simplemente el torque no sea suficiente para mover el stepper	, esto nos sugerirá que frecuencia utilizar para los registros y para el proyecto final. 
+int steps = 0;
+int pasosdelarampa = 100;
+int delayTime = 1000;
+ 
+void setup() {
+  Serial.begin(9600);
+  pinMode(9, OUTPUT);
+}
+ 
+void loop() {
+  for (int i = 0; i < pasosdelarampa; i++) {
+    digitalWrite(9, HIGH);
+    delayMicroseconds(delayTime);
+    digitalWrite(9, LOW);
+    delayMicroseconds(delayTime);
+  }
+ 
+  for (int i = 0; i < pasosdelarampa; i++) {
+    digitalWrite(9, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(9, LOW);
+    delayMicroseconds(1000);
+  }
+ 
+  Serial.print(", Velocidad: ");
+  Serial.print(delayTime);
+  Serial.println(" us");
+ 
+  delayTime -= 50;
+  if (delayTime <= 50) {
+    delayTime = 50;
+  }
+  
+  delay(1000);
+}
+
+
+
+
+	
