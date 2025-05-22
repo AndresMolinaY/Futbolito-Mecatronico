@@ -1,4 +1,4 @@
-Mini Futbolito Mecatrónico  
+## Mini Futbolito Mecatrónico  
 
 Este proyecto fue desarrollado como parte de la materia **Implementación de Sistemas Mecatrónicos**. Consiste en un futbolito mecatrónico basado en el video [Automated Foosball Table](https://www.youtube.com/watch?v=JqSubWfrhvw), adaptado con componentes accesibles y un diseño personalizado.  
 
